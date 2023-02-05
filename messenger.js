@@ -200,8 +200,10 @@ class Messenger {
 
 
 modules.export = {
-  bootstrap,
-  on,
-  once,
-  send
+  messenger: {
+    bootstrap,
+    on,
+    once,
+    send
+  }
 }
