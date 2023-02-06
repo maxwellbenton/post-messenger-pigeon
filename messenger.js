@@ -198,12 +198,13 @@ class Messenger {
   }
 }
 
-
-modules.export = {
-  messenger: {
-    bootstrap,
-    on,
-    once,
-    send
-  }
+const messenger = new Messenger();
+const PostMessengerPigeon = {
+  bootstrap: messenger.bootstrap,
+  on: messenger.on,
+  once: messenger.once,
+  send: messenger.send,
 }
+
+window.PostMessengerPigeon = PostMessengerPigeon
+modules.export = PostMessengerPigeon
