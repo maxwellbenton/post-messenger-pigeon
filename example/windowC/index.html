@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      flex-flow: column;
+    }
+  </style>
+  <title>Pop Up</title>
+</head>
+<body>
+  <script type="module" src="https://unpkg.com/post-messenger-pigeon@0.0.11/index.js"></script>
+  <script defer type="module">
+    (async function() {
+      console.log('POPUP WINDOW LOADED');
+      const messenger = window.PostMessengerPigeon
+      messenger.bootstrap('mastercard.src');
+
+      const response = await messenger.send('READY', { 
+        window: window.opener || window.parent.parent,
+        origin: 'http://localhost:8080'
+      });
+
+      document.body.append(JSON.stringify(response.data))
+
+      const ctaButton = document.createElement('button')
+      ctaButton.innerText = "Continue"
+      document.body.append(ctaButton)
+      ctaButton.addEventListener('click', async (e) => {
+        e.preventDefault()
+        await messenger.send('ACTION', { 
+          window: window.opener || window.parent.parent,
+          origin: 'http://localhost:8080'
+        }, {
+          action: 'COMPLETE',
+          checkoutResponse: 'eyyyyyyyy'
+        });
+        window.close()
+      })
+    })()
+  </script>
+</body>
+</html>

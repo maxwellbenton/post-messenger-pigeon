@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+  </style>
+  <title>Primary Window</title>
+</head>
+<body>
+  <button id="launch">Launch iFrame</button>
+  <div id="frame-container">
+  </div>
+  <script type="module" src="https://unpkg.com/post-messenger-pigeon@0.0.11/index.js"></script>
+  <script type="module">
+    console.log('PRIMARY WINDOW LOADED');
+    const messenger = window.PostMessengerPigeon
+    const iframe = document.createElement('iframe');
+    iframe.src = 'http://localhost:8081/';
+    iframe.width = "300";
+		iframe.height = "550";
+		iframe.frameBorder ="0";
+		iframe.scrolling = "0";
+		iframe.style.border= "none";
+		// iframe.style.background = "gray";
+
+    // const messenger = new Messenger();
+    messenger.bootstrap('mastercard.src');
+
+    const readyPromise = messenger.once('proxyinit', { 
+      window: iframe.contentWindow, 
+      origin: iframe.src
+    }, (data) => {
+      console.log('proxy init READY!!!!!!!', data);
+      return {
+        transactionOptions: {
+          free: true
+        }
+      }
+    });
+    
+    document.querySelector('#launch').addEventListener('click', async () => {
+      console.log('LAUNCHING');
+      
+      
+      document.querySelector('#frame-container').appendChild(iframe);
+      // this.style.display
+
+      const frameContainer = document.querySelector('#frame-container')      
+      const targetOrigin = document.querySelector('#targetOrigin')?.value;
+
+      iframe.src = targetOrigin || 'http://localhost:8081/';
+      frameContainer.appendChild(iframe);
+      console.log('BEFORE READY PROMISE', readyPromise)
+      await readyPromise
+      console.log('AFTER READY PROMISE', readyPromise)
+      const response = await messenger.send('proxysend', { 
+        window: iframe.contentWindow,
+        origin: 'http://localhost:8081'
+      }, {
+        type: 'transaction',
+        payload: {
+          transactionOptions: {
+            free: true
+          }
+        }
+      });
+
+      const popupButton = document.createElement('button')
+      popupButton.innerText = 'Open Popup'
+      document.body.append(popupButton)
+      popupButton.addEventListener('click', async () => {
+        const popup = window.open('http://localhost:8082/', 'popup', 'width=300,height=550')
+        const popupReadyPromise = messenger.once('READY', { 
+          window: popup,
+          origin: 'http://localhost:8082'
+        }, (data) => {
+          console.log('READY!!!!!!!', data);
+          return {
+            someData: 'fromThePrimaryWindow'
+          }
+        });
+
+        await popupReadyPromise
+
+        const popupResponse = await messenger.once('ACTION', { 
+          window: popup,
+          origin: 'http://localhost:8082'
+        });
+
+        console.log('popupResponse', popupResponse)
+      })
+    })
+  </script>
+</body>
+</html>

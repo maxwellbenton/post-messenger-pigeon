@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: lightyellow;
+    }
+  </style>
+  <title>Communicator Frame</title>
+</head>
+<body>
+  <h1>Communicator Frame</h1>
+  <script type="module" src="https://unpkg.com/post-messenger-pigeon@0.0.11/index.js"></script>
+  <script defer type="module">
+    (async () => {
+      console.log('IFRAME WINDOW LOADED');
+      const messenger = window.PostMessengerPigeon
+      messenger.bootstrap('mastercard.src');
+      // const iframe = document.createElement('iframe');
+      // iframe.src = 'http://localhost:8081';
+      // document.getElementById('frame-container').appendChild(iframe);
+
+      messenger.on('proxysend', { 
+        window: window.parent, 
+        // origin: window.parent.origin
+      }, (data) => {
+        return new Promise((resolve, reject) => {
+          console.log('async callback call')
+          setTimeout(() => {
+            const p = document.createElement('p')
+            p.innerText = 'proxysend called'
+            document.body.appendChild(p)
+            console.log('async callback call resolved')
+            resolve({ result: "$5"})
+          }, 2000)
+        })
+      });
+      
+      const response = await messenger.send('proxyinit', { 
+        window: window.parent.parent,
+        origin: 'http://localhost:8080'
+      }, {
+        type: 'transaction',
+        payload: {
+          transactionOptions: {
+            free: true
+          }
+        }
+      });
+
+      // console.warn('woohoo', response);
+    })()
+  </script>
+</body>
+</html>

@@ -32,13 +32,21 @@ class Store {
 
 const _store = new Store();
 
+function logIfDebug(arguments) {
+  try {
+    if (localStorage.getItem('post-messenger-pigeon', true)) {
+      console.log(...arguments)
+    }
+  } catch (e) {}
+}
+
 function createMessage(messageName, data, origin) {
   const message = JSON.stringify({
     messageName,
     ...(data && Object.keys(data).length && { data }),
     ...(origin && { origin })
   })
-  console.log('CREATED MESSAGE', message)
+  logIfDebug('CREATED MESSAGE', message)
   return message
 }
 
@@ -60,7 +68,7 @@ function setMessagePrefix(prefix) {
 
 async function _listen(messageName, callback, config, once = true) {
   const actualMessageName = _store.prefix + '.' + messageName
-  console.log('LISTENING', actualMessageName, callback)
+  logIfDebug('LISTENING', actualMessageName, callback)
   let cancel, result
   const actualPromise = new Promise((resolve, reject) => {
     const wrappedCallback = async (e) => {
@@ -69,9 +77,9 @@ async function _listen(messageName, callback, config, once = true) {
       // data is already parsed here
       const { data, origin, source } = e;
       if (config?.domain && config.domain !== origin) return
-      console.log('CALLBACK', callback)
+      logIfDebug('CALLBACK', callback)
       result = await callback(data);
-      console.log('CALLBACK RESULT', result)
+      logIfDebug('CALLBACK RESULT', result)
 
       if (!data.messageName.endsWith('.acknowledged')) {
         const message = createMessage(data.messageName + '.acknowledged', result)
@@ -100,7 +108,7 @@ async function _listen(messageName, callback, config, once = true) {
 function bootstrap(prefix) {
   setMessagePrefix(prefix)
   _listen('handshake', (data) => {
-    console.log('INSIDE HANDSHAKE CALLBACK', data)
+    logIfDebug('INSIDE HANDSHAKE CALLBACK', data)
     const messageName = data?.data?.messageName
     return {
       messageName,
@@ -110,7 +118,7 @@ function bootstrap(prefix) {
 }
   
 function _broadcast(targetWindow, message, targetOrigin) {
-  console.log('BROADCASTING', message, targetOrigin)
+  logIfDebug(`BROADCASTING TO ${targetOrigin}`, message, targetOrigin)
   targetWindow.postMessage(message, targetOrigin);
 }
 
@@ -134,7 +142,7 @@ async function send(messageName, config, data) {
   }
   const prefix = _store.prefix
   const actualMessageName = prefix + '.' + messageName
-  console.log('STARTING SEND', actualMessageName, config, data)
+  logIfDebug('STARTING SEND', actualMessageName, config, data)
   let sendPromise = new Promise((resolve, reject) => {
     if (config?.timeout) {
       setTimeout(() => reject(new Error('Timeout')), config.timeout)
@@ -142,17 +150,16 @@ async function send(messageName, config, data) {
 
     _listen('handshake.acknowledged', (e) => e, { window: window.parent }, true)
       .then(result => {
-        console.log('HANDSHAKE ACKNOWLEDGED', result)
+        logIfDebug('HANDSHAKE ACKNOWLEDGED', result)
         if (result?.data?.registered) {
           
           _listen(messageName + '.acknowledged', (e) => e, config, true)
             .then(result => {
-              console.log('MESSAGE ACKNOWLEDGED', result)
+              logIfDebug('MESSAGE ACKNOWLEDGED', result)
               resolve(result)
             })
 
           const message = createMessage(actualMessageName, data)
-          console.log('SENDING MESSAGE', message)
           _broadcast(config.window, message, config.origin)
         } else {
           throw new Error(`No listener registered for ${actualMessageName}`)
@@ -160,25 +167,24 @@ async function send(messageName, config, data) {
       })
 
       const handshakeMessage = createMessage(prefix + '.' + 'handshake', { messageName: actualMessageName })
-      console.log('SENDING HANDSHAKE', handshakeMessage)
+      logIfDebug('SENDING HANDSHAKE', handshakeMessage)
       _broadcast(config.window, handshakeMessage, config.origin)
-      
   })
 
   return await sendPromise
 }
 
 window.addEventListener('message', async (event) => {
-  console.log('MESSAGE RECEIVED', event)
+  logIfDebug('MESSAGE RECEIVED', event)
   const { data, origin, source } = event;
   const parsedData = JSON.parse(data);
   if (isRegistered(parsedData.messageName)) {
     let result
     try {
       result = await _store.registry[parsedData.messageName]({ origin, source, data: parsedData })
-      console.log('END OF MESSAGE LISTENER CALLBACK', result)
+      logIfDebug('END OF MESSAGE LISTENER CALLBACK', result)
     } catch (e) {
-      console.log('Error in callback', e)
+      logIfDebug('Error in callback', e)
     }
   }
 })
