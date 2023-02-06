@@ -207,4 +207,5 @@ const PostMessengerPigeon = {
 }
 
 window.PostMessengerPigeon = PostMessengerPigeon
+console.log('EXPORTING', PostMessengerPigeon)
 modules.exports = PostMessengerPigeon
