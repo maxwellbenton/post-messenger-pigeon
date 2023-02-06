@@ -193,7 +193,6 @@ class Messenger {
         
     })
 
-    
     return await sendPromise
   }
 }
@@ -206,5 +205,5 @@ const PostMessengerPigeon = {
   send: messenger.send,
 }
 
-// window.PostMessengerPigeon = PostMessengerPigeon
+window.PostMessengerPigeon = PostMessengerPigeon
 module.exports = PostMessengerPigeon
