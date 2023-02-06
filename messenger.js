@@ -207,4 +207,4 @@ const PostMessengerPigeon = {
 }
 
 window.PostMessengerPigeon = PostMessengerPigeon
-modules.export = PostMessengerPigeon
+modules.exports = PostMessengerPigeon

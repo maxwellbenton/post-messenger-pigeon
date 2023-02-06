@@ -1,6 +1,6 @@
 {
   "name": "post-messenger-pigeon",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A lightweight postMessage implementation for cross-window communication",
   "main": "index.js",
   "scripts": {
