@@ -206,6 +206,6 @@ const PostMessengerPigeon = {
   send: messenger.send,
 }
 
-window.PostMessengerPigeon = PostMessengerPigeon
+// window.PostMessengerPigeon = PostMessengerPigeon
 console.log('EXPORTING', PostMessengerPigeon)
 modules.exports = PostMessengerPigeon

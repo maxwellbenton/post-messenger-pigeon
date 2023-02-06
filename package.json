@@ -1,11 +1,14 @@
 {
   "name": "post-messenger-pigeon",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "A lightweight postMessage implementation for cross-window communication",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "maxwell benton <maxwellbenton@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "browserify": "^17.0.0"
+  }
 }
